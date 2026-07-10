@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暖記帳 — 你的記帳好朋友</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#FAF3E7;
+    --card:#FFFFFF;
+    --card-edge:#EFE2CB;
+    --ink:#3D3423;
+    --ink-soft:#8A7F68;
+    --apricot:#FFC79A;
+    --apricot-deep:#F0985A;
+    --moss:#7C9473;
+    --moss-deep:#577050;
+    --persimmon:#E2703A;
+    --gold:#E8B84B;
+    --tape:#FDE6C8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    font-family:'Noto Sans TC','Zen Maru Gothic',sans-serif;
+    color:var(--ink);
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  .brand h1{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:24px;margin:0;letter-spacing:.5px;}
+  .brand p{margin:2px 0 0;font-size:13px;color:var(--ink-soft);}
+
+  .mascot-wrap{position:relative;width:64px;height:64px;flex:none;}
+  .mascot{width:100%;height:100%;animation:breathe 3.4s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{transform:scale(1) translateY(0);}50%{transform:scale(1.045) translateY(-2px);}}
+
+  .tabs{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:2px;}
+  .tab-btn{
+    flex:none;border:1.5px solid var(--card-edge);background:var(--card);
+    padding:8px 15px;border-radius:999px;font-size:13px;font-weight:700;
+    color:var(--ink-soft);cursor:pointer;font-family:'Noto Sans TC',sans-serif;white-space:nowrap;
+  }
+  .tab-btn.active{background:var(--persimmon);border-color:var(--persimmon);color:#fff;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .hero{
+    background:var(--card);border:1px solid var(--card-edge);border-radius:22px;
+    padding:20px 20px 18px;margin-bottom:18px;position:relative;overflow:hidden;
+  }
+  .hero-label{font-size:12px;color:var(--ink-soft);margin:0 0 4px;}
+  .hero-num{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:30px;margin:0;color:var(--persimmon);}
+  .hero-msg{margin-top:12px;font-size:14px;line-height:1.7;color:var(--ink);background:var(--tape);border-radius:14px;padding:12px 14px;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 10px;}
+  .chip{
+    border:1.5px solid var(--card-edge);background:var(--card);
+    padding:7px 14px;border-radius:999px;font-size:13px;cursor:pointer;
+    color:var(--ink-soft);transition:.15s;font-family:'Noto Sans TC',sans-serif;
+  }
+  .chip.active{background:var(--apricot);border-color:var(--apricot-deep);color:#5A3418;font-weight:700;}
+
+  .form-card{background:var(--card);border:1px solid var(--card-edge);border-radius:20px;padding:18px 18px 16px;margin-bottom:24px;}
+  .form-row{display:flex;gap:10px;margin-bottom:10px;}
+  .form-row input, .form-row select{
+    flex:1;border:1.5px solid var(--card-edge);border-radius:12px;
+    padding:11px 13px;font-size:15px;font-family:'Noto Sans TC',sans-serif;
+    background:#FFFDF8;color:var(--ink);
+  }
+  .form-row input:focus, .form-row select:focus{outline:none;border-color:var(--apricot-deep);}
+  .amt-row input{max-width:130px;}
+  button.submit{
+    width:100%;border:none;border-radius:14px;padding:13px;
+    background:var(--persimmon);color:#fff;font-size:15px;font-weight:700;
+    font-family:'Zen Maru Gothic',sans-serif;cursor:pointer;letter-spacing:1px;transition:.15s;
+  }
+  button.submit:hover{background:#c85f2c;}
+  button.submit:disabled{opacity:.5;cursor:default;}
+  button.ghost{
+    width:100%;border:1.5px solid var(--card-edge);border-radius:14px;padding:11px;
+    background:transparent;color:var(--ink-soft);font-size:13px;cursor:pointer;
+    font-family:'Noto Sans TC',sans-serif;margin-top:8px;
+  }
+
+  .feed{display:flex;flex-direction:column;gap:16px;}
+  .entry{display:flex;gap:10px;align-items:flex-start;}
+  .entry .avatar{
+    flex:none;width:34px;height:34px;border-radius:50%;background:var(--apricot);
+    display:flex;align-items:center;justify-content:center;margin-top:2px;
+  }
+  .entry .avatar svg{width:22px;height:22px;}
+  .bubble-col{flex:1;min-width:0;}
+
+  .receipt{
+    background:var(--card);border:1px solid var(--card-edge);border-radius:14px;
+    padding:10px 14px;position:relative;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;
+  }
+  .receipt::before{
+    content:'';position:absolute;top:-6px;left:18px;width:36px;height:14px;
+    background:var(--gold);opacity:.55;border-radius:3px;transform:rotate(-3deg);
+  }
+  .receipt .item{font-size:14px;font-weight:700;}
+  .receipt .meta{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .receipt .amt{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:16px;color:var(--moss-deep);}
+  .receipt .del{border:none;background:none;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:2px 4px;}
+
+  .reply{
+    background:var(--tape);border-radius:4px 14px 14px 14px;padding:11px 14px;
+    font-size:13.5px;line-height:1.7;color:var(--ink);
+  }
+  .dots span{animation:blink 1.2s infinite;opacity:.3;}
+  .dots span:nth-child(2){animation-delay:.2s;}
+  .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.3;}40%{opacity:1;}}
+
+  .empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:30px 10px;}
+
+  .summary{margin-top:26px;background:var(--card);border:1px solid var(--card-edge);border-radius:20px;padding:16px 18px;}
+  .summary h3{margin:0 0 10px;font-family:'Zen Maru Gothic',sans-serif;font-size:15px;font-weight:700;}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12.5px;}
+  .bar-label{width:64px;flex:none;color:var(--ink-soft);}
+  .bar-track{flex:1;height:8px;background:var(--bg);border-radius:6px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--moss);border-radius:6px;}
+  .bar-val{width:52px;flex:none;text-align:right;font-weight:700;}
+
+  .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .metric-card{background:var(--tape);border-radius:16px;padding:14px 16px;}
+  .metric-card .m-label{font-size:12px;color:var(--ink-soft);margin:0 0 4px;}
+  .metric-card .m-val{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:19px;margin:0;color:var(--persimmon);}
+  .metric-card.total{grid-column:1/-1;background:var(--apricot);}
+  .metric-card.total .m-val{color:#5A3418;font-size:24px;}
+
+  .fixed-row{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--card);border:1px solid var(--card-edge);border-radius:14px;
+    padding:11px 14px;margin-bottom:8px;
+  }
+  .fixed-row .name{font-size:14px;font-weight:700;}
+  .fixed-row .cat{font-size:11px;color:var(--ink-soft);}
+  .fixed-row .right{display:flex;align-items:center;gap:10px;}
+  .fixed-row .amt{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;color:var(--moss-deep);}
+
+  .goal-card{background:var(--card);border:1px solid var(--card-edge);border-radius:20px;padding:20px;margin-bottom:18px;}
+  .goal-name{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:18px;margin:0 0 6px;}
+  .goal-progress-track{height:14px;background:var(--bg);border-radius:8px;overflow:hidden;margin:12px 0 8px;}
+  .goal-progress-fill{height:100%;background:var(--moss);border-radius:8px;transition:width .3s;}
+  .goal-nums{display:flex;justify-content:space-between;font-size:13px;color:var(--ink-soft);}
+  .goal-nums b{color:var(--ink);font-family:'Zen Maru Gothic',sans-serif;}
+
+  .deposit-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--card-edge);}
+  .deposit-row .note{color:var(--ink-soft);}
+
+  .footnote{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <div class="mascot-wrap">
+      <svg class="mascot" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="56" rx="38" ry="34" fill="#FFC79A"/>
+        <circle cx="36" cy="52" r="4.2" fill="#3D3423"/>
+        <circle cx="64" cy="52" r="4.2" fill="#3D3423"/>
+        <ellipse cx="30" cy="62" rx="6" ry="4" fill="#F0985A" opacity=".55"/>
+        <ellipse cx="70" cy="62" rx="6" ry="4" fill="#F0985A" opacity=".55"/>
+        <path d="M40 66 Q50 74 60 66" stroke="#3D3423" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M50 22 Q46 10 38 12" stroke="#E2703A" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M50 22 Q54 10 62 12" stroke="#E2703A" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <h1>暖記帳</h1>
+      <p>嗨，我是暖暖，記帳的時候我都在你身邊</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab-btn active" data-tab="ledger">記帳</div>
+    <div class="tab-btn" data-tab="fixed">固定支出</div>
+    <div class="tab-btn" data-tab="monthly">月結算</div>
+    <div class="tab-btn" data-tab="goal">存錢目標</div>
+  </div>
+
+  <!-- 記帳 -->
+  <div class="panel active" id="panel-ledger">
+    <div class="hero">
+      <p class="hero-label">本週一起花掉的</p>
+      <p class="hero-num" id="weekTotal">$0</p>
+      <div class="hero-msg" id="heroMsg">還沒有紀錄喔，記第一筆讓暖暖看看吧！</div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-row"><input type="text" id="itemInput" placeholder="買了什麼呢？例如：拿鐵咖啡" maxlength="30"></div>
+      <div class="form-row amt-row"><input type="number" id="amtInput" placeholder="金額 $" min="0" step="1"></div>
+      <div class="chips" id="catChips"></div>
+      <button class="submit" id="submitBtn">記這一筆 ✦</button>
+    </div>
+
+    <div class="feed" id="feed"></div>
+    <div class="empty" id="emptyState">暖暖還在等你的第一筆消費紀錄 🍡</div>
+
+    <div class="summary">
+      <h3>本週小小分析</h3>
+      <div id="summaryBars"></div>
+    </div>
+  </div>
+
+  <!-- 固定支出 -->
+  <div class="panel" id="panel-fixed">
+    <div class="hero">
+      <p class="hero-label">每月固定要準備的</p>
+      <p class="hero-num" id="fixedTotal">$0</p>
+      <div class="hero-msg">保險、學費、卡費、房貸這些，先設定好，暖暖就能幫你把每個月的全貌看得更清楚。</div>
+    </div>
+    <div class="form-card">
+      <div class="form-row"><input type="text" id="fixedNameInput" placeholder="項目名稱，例如：房貸" maxlength="20"></div>
+      <div class="form-row amt-row"><input type="number" id="fixedAmtInput" placeholder="金額 $" min="0" step="1"></div>
+      <div class="form-row">
+        <select id="fixedCatSelect">
+          <option value="insurance">🛡 保險</option>
+          <option value="tuition">🎓 學費</option>
+          <option value="creditcard">💳 卡費</option>
+          <option value="mortgage">🏠 房貸</option>
+          <option value="other">📌 其他固定支出</option>
+        </select>
+      </div>
+      <button class="submit" id="fixedSubmitBtn">加入固定支出</button>
+    </div>
+    <div id="fixedList"></div>
+    <div class="empty" id="fixedEmpty">還沒有設定固定支出喔。</div>
+  </div>
+
+  <!-- 月結算 -->
+  <div class="panel" id="panel-monthly">
+    <p class="hero-label" id="monthLabel" style="margin-bottom:10px;"></p>
+    <div class="metric-grid">
+      <div class="metric-card">
+        <p class="m-label">固定支出</p>
+        <p class="m-val" id="monthFixed">$0</p>
+      </div>
+      <div class="metric-card">
+        <p class="m-label">日常花費</p>
+        <p class="m-val" id="monthFlexible">$0</p>
+      </div>
+      <div class="metric-card total">
+        <p class="m-label">這個月合計</p>
+        <p class="m-val" id="monthTotal">$0</p>
+      </div>
+    </div>
+    <div class="hero-msg" id="monthMsg" style="margin:0;"></div>
+  </div>
+
+  <!-- 存錢目標 -->
+  <div class="panel" id="panel-goal">
+    <div id="goalSetupCard" class="form-card" style="display:none;">
+      <div class="form-row"><input type="text" id="goalNameInput" placeholder="目標名稱，例如：日本旅遊基金" maxlength="20"></div>
+      <div class="form-row amt-row"><input type="number" id="goalTargetInput" placeholder="目標金額 $" min="0" step="1"></div>
+      <button class="submit" id="goalSubmitBtn">設定目標</button>
+    </div>
+
+    <div id="goalActiveCard" style="display:none;">
+      <div class="goal-card">
+        <p class="goal-name" id="goalName"></p>
+        <div class="goal-progress-track"><div class="goal-progress-fill" id="goalFill" style="width:0%"></div></div>
+        <div class="goal-nums"><span>已存 <b id="goalSaved">$0</b></span><span id="goalPct">0%</span><span>目標 <b id="goalTarget">$0</b></span></div>
+        <div class="hero-msg" id="goalMsg" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-row amt-row"><input type="number" id="depositAmtInput" placeholder="存入 $" min="0" step="1"></div>
+        <div class="form-row"><input type="text" id="depositNoteInput" placeholder="備註（選填）" maxlength="20"></div>
+        <button class="submit" id="depositSubmitBtn">存進目標</button>
+        <button class="ghost" id="resetGoalBtn">重新設定目標</button>
+      </div>
+
+      <div class="summary">
+        <h3>存款紀錄</h3>
+        <div id="depositList"></div>
+        <div class="empty" id="depositEmpty">還沒有存款紀錄。</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footnote" id="storageNote"></p>
+</div>
+
+<script>
+const HAS_CLOUD_STORAGE = typeof window.storage !== 'undefined';
+
+async function storageGet(key){
+  if(HAS_CLOUD_STORAGE){
+    try{ const r = await window.storage.get(key,false); return r ? r.value : null; }catch(e){ return null; }
+  }
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  if(HAS_CLOUD_STORAGE){
+    try{ await window.storage.set(key, value, false); }catch(e){}
+    return;
+  }
+  try{ localStorage.setItem(key, value); }catch(e){}
+}
+
+document.getElementById('storageNote').textContent = HAS_CLOUD_STORAGE
+  ? '資料存在你的 Claude 帳號裡。'
+  : '資料只存在你自己這台裝置的瀏覽器裡，暖暖不會把它傳到任何地方。';
+
+const CATEGORIES = [
+  {key:'coffee', label:'☕ 咖啡飲料'},
+  {key:'meal', label:'🍚 正餐'},
+  {key:'snack', label:'🍡 點心零食'},
+  {key:'transport', label:'🚗 交通'},
+  {key:'fun', label:'🎈 娛樂'},
+  {key:'shopping', label:'🛍 購物'},
+  {key:'other', label:'✨ 其他'}
+];
+const FIXED_CATEGORIES = {
+  insurance:'🛡 保險', tuition:'🎓 學費', creditcard:'💳 卡費',
+  mortgage:'🏠 房貸', other:'📌 其他固定支出'
+};
+
+const OPENERS = [
+  (item,amt)=>`太好了！${item}花了 $${amt}，這絕對是今天值得的小確幸 ✦`,
+  (item,amt)=>`收到！$${amt}買的${item}，希望它讓你今天多了一點開心。`,
+  (item,amt)=>`記下囉～ ${item} $${amt}，能為自己花錢是很棒的事喔！`,
+  (item,amt)=>`${item}入手啦！$${amt}花得很值得，喜歡的東西就該擁有。`,
+  (item,amt)=>`哇，$${amt}的${item}，光用想的就覺得心情變好了呢。`,
+  (item,amt)=>`這筆 $${amt} 花在${item}上，是你今天送給自己的禮物。`,
+  (item,amt)=>`${item}到手！暖暖也替你開心，$${amt}花得很有意義。`,
+  (item,amt)=>`很棒的選擇，${item}花了 $${amt}，你值得這份小小的滿足。`,
+  (item,amt)=>`$${amt}換來${item}，感覺今天的自己被好好照顧了。`,
+  (item,amt)=>`記錄完成！${item} $${amt}，每一筆消費都是你在生活裡做的小決定，暖暖都支持你。`
+];
+const NUDGES = {
+  coffee: ['如果咖啡因有點多，一週抓3-4杯左右身體會更舒服一點，不用戒掉，喝得開心最重要。','咖啡因帶來的精神很棒，不妨偶爾留意一下攝取量，讓身體跟心情一樣輕盈。'],
+  meal: ['記得正餐盡量正常吃、別餓過頭再吃，身體會謝謝你。','好好吃飯是照顧自己最基本的方式，這筆花得很值得。'],
+  snack: ['點心是生活裡的小確幸，如果消夜吃得比較多，偶爾可以換成溫牛奶或水果，讓睡眠更好一點。','零食帶來的療癒很珍貴，留意一下睡前吃的份量，隔天精神會更好喔。'],
+  transport: ['這筆交通費是為了帶你去想去的地方，很值得。','移動的自由也是一種投資，這筆花得很合理。'],
+  fun: ['娛樂花費是投資在快樂上，適度享受完全沒問題。','為自己安排開心的事，是很重要的生活技能。'],
+  shopping: ['購物的快樂通常很短暫，如果同類東西買得比較頻繁，不妨想想是不是有別的方式也能犒賞自己。','喜歡的東西值得擁有，如果想讓快樂更持久，也可以偶爾把錢留給自己想珍惜久一點的東西。'],
+  other: ['生活裡總有些說不清的花費，那也是生活的一部分，不用太在意。','這種花費常常是臨時的驚喜或需要，順其自然就好。']
+};
+
+let selectedCat = 'coffee';
+let entries = [];
+let fixedExpenses = [];
+let goal = null;
+let deposits = [];
+let lastOpenerIdx = -1;
+
+function catLabel(key){ const c = CATEGORIES.find(c=>c.key===key); return c ? c.label : '✨ 其他'; }
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tab));
+  if(tab==='monthly') renderMonthly();
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click', ()=>switchTab(b.dataset.tab)));
+
+function renderChips(){
+  const wrap = document.getElementById('catChips');
+  wrap.innerHTML = '';
+  CATEGORIES.forEach(c=>{
+    const el = document.createElement('div');
+    el.className = 'chip' + (c.key===selectedCat ? ' active' : '');
+    el.textContent = c.label;
+    el.onclick = ()=>{ selectedCat = c.key; renderChips(); };
+    wrap.appendChild(el);
+  });
+}
+renderChips();
+
+async function loadAll(){
+  const [e, f, g, d] = await Promise.all([
+    storageGet('warm-ledger-entries'),
+    storageGet('warm-ledger-fixed'),
+    storageGet('warm-ledger-goal'),
+    storageGet('warm-ledger-deposits')
+  ]);
+  try{ entries = e ? JSON.parse(e) : []; }catch(err){ entries = []; }
+  try{ fixedExpenses = f ? JSON.parse(f) : []; }catch(err){ fixedExpenses = []; }
+  try{ goal = g ? JSON.parse(g) : null; }catch(err){ goal = null; }
+  try{ deposits = d ? JSON.parse(d) : []; }catch(err){ deposits = []; }
+  renderFeed(); renderSummary(); renderFixed(); renderGoal();
+}
+function saveEntries(){ storageSet('warm-ledger-entries', JSON.stringify(entries)); }
+function saveFixed(){ storageSet('warm-ledger-fixed', JSON.stringify(fixedExpenses)); }
+function saveGoal(){ storageSet('warm-ledger-goal', JSON.stringify(goal)); }
+function saveDeposits(){ storageSet('warm-ledger-deposits', JSON.stringify(deposits)); }
+
+function weeklyCountFor(catKey, beforeTs){
+  const weekAgo = beforeTs - 7*24*60*60*1000;
+  return entries.filter(e => e.category===catKey && e.ts > weekAgo && e.ts <= beforeTs).length;
+}
+function pickOpener(item, amount){
+  let idx = Math.floor(Math.random()*OPENERS.length);
+  if(OPENERS.length>1){ while(idx===lastOpenerIdx) idx = Math.floor(Math.random()*OPENERS.length); }
+  lastOpenerIdx = idx;
+  return OPENERS[idx](item, amount.toLocaleString());
+}
+function pickNudge(catKey){ const l = NUDGES[catKey] || NUDGES.other; return l[Math.floor(Math.random()*l.length)]; }
+function fallbackMessage(item, amount, catKey, weekCount){
+  let msg = pickOpener(item, amount);
+  if(weekCount>=3) msg += ' ' + pickNudge(catKey);
+  return msg;
+}
+
+async function generateMessage(item, amount, catKey, weekCount){
+  if(!HAS_CLOUD_STORAGE) return fallbackMessage(item, amount, catKey, weekCount);
+  const catName = catLabel(catKey).replace(/^\S+\s/, '');
+  const system = `你是「暖暖」，一個溫暖、正向、絕不說教的記帳好朋友吉祥物。使用者反其道而行，不想要碎碎念記帳，只想要被鼓勵和肯定。
+規則：
+1. 用繁體中文回覆，語氣像貼心朋友，親切自然，可以用最多1-2個表情符號。
+2. 一定要先真心肯定/慶祝這筆消費，讓使用者覺得花這筆錢是值得的、開心的。
+3. 只有在「本週同類別次數」達到3次以上時，才可以再補一句非常輕柔、非說教的小提醒（用建議語氣，不是警告，不能用「不要」「應該」這種命令語氣，改用「可以」「不妨」）。次數不到3次就完全不要提健康或頻率的事。
+4. 絕對不要負面評價、不要說「花太多」「不健康」「浪費」這類字眼，不要製造罪惡感。
+5. 總長度2到3句話，純文字，不要用markdown。`;
+  const weekLine = weekCount>=3
+    ? `這是使用者本週第${weekCount}次買「${catName}」類別的東西，如果適合可以溫柔提一句相關的小提醒。`
+    : `這是使用者本週第${weekCount}次買「${catName}」類別的東西，次數還不多，不需要提健康或頻率建議，單純慶祝就好。`;
+  const userMsg = `使用者剛記錄了一筆消費：品項「${item}」，金額 $${amount}，類別「${catName}」。${weekLine}`;
+  try{
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:300, system:system, messages:[{role:'user', content:userMsg}] })
+    });
+    const data = await response.json();
+    const textBlock = (data.content || []).find(b=>b.type==='text');
+    if(textBlock && textBlock.text) return textBlock.text.trim();
+    throw new Error('no text');
+  }catch(e){ return fallbackMessage(item, amount, catKey, weekCount); }
+}
+
+function moodMessage(total, count){
+  if(count===0) return '還沒有紀錄喔，記第一筆讓暖暖看看吧！';
+  if(total < 300) return `這週目前花了 $${total}，步調很輕鬆，暖暖陪你慢慢記～`;
+  if(total < 1000) return `這週累積 $${total} 囉，每一筆都是你為自己做的小小決定，很棒！`;
+  return `這週已經 $${total} 了，看起來這是豐盛的一週，記得每一筆都有帶給你開心或方便喔！`;
+}
+
+function renderSummary(){
+  const now = Date.now();
+  const weekAgo = now - 7*24*60*60*1000;
+  const weekEntries = entries.filter(e=>e.ts>weekAgo);
+  const total = weekEntries.reduce((s,e)=>s+e.amount,0);
+  document.getElementById('weekTotal').textContent = '$' + total.toLocaleString();
+  document.getElementById('heroMsg').textContent = moodMessage(total, weekEntries.length);
+
+  const byCat = {};
+  weekEntries.forEach(e=>{ byCat[e.category] = (byCat[e.category]||0) + e.amount; });
+  const maxVal = Math.max(1, ...Object.values(byCat));
+  const barsWrap = document.getElementById('summaryBars');
+  const sorted = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  if(sorted.length===0){
+    barsWrap.innerHTML = '<div style="font-size:13px;color:var(--ink-soft);">這週還沒有分類資料，記幾筆之後就會出現小小的花費地圖喔。</div>';
+    return;
+  }
+  barsWrap.innerHTML = sorted.map(([key,val])=>{
+    const pct = Math.round(val/maxVal*100);
+    return `<div class="bar-row"><div class="bar-label">${catLabel(key)}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-val">$${val.toLocaleString()}</div></div>`;
+  }).join('');
+}
+
+function avatarSVG(){
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="56" rx="38" ry="34" fill="#FFC79A"/><circle cx="36" cy="52" r="4.2" fill="#3D3423"/><circle cx="64" cy="52" r="4.2" fill="#3D3423"/><path d="M40 66 Q50 74 60 66" stroke="#3D3423" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+}
+
+function renderFeed(){
+  const feed = document.getElementById('feed');
+  const emptyState = document.getElementById('emptyState');
+  feed.innerHTML = '';
+  if(entries.length===0){ emptyState.style.display = 'block'; return; }
+  emptyState.style.display = 'none';
+  const sorted = [...entries].sort((a,b)=>b.ts-a.ts);
+  sorted.forEach(e=>{
+    const row = document.createElement('div');
+    row.className = 'entry';
+    const date = new Date(e.ts);
+    const dateStr = `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+    row.innerHTML = `
+      <div class="avatar">${avatarSVG()}</div>
+      <div class="bubble-col">
+        <div class="receipt">
+          <div><div class="item">${escapeHtml(e.item)}</div><div class="meta">${catLabel(e.category)} · ${dateStr}</div></div>
+          <div class="amt">$${e.amount.toLocaleString()}</div>
+        </div>
+        <div class="reply" id="reply-${e.id}">${e.message ? e.message : '<span class="dots"><span>●</span><span>●</span><span>●</span></span>'}</div>
+      </div>`;
+    feed.appendChild(row);
+  });
+}
+
+async function addEntry(){
+  const itemInput = document.getElementById('itemInput');
+  const amtInput = document.getElementById('amtInput');
+  const item = itemInput.value.trim();
+  const amount = parseFloat(amtInput.value);
+  if(!item || !amount || amount<=0){ itemInput.focus(); return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  const ts = Date.now();
+  const id = 'e' + ts + Math.floor(Math.random()*1000);
+  const weekCount = weeklyCountFor(selectedCat, ts) + 1;
+  entries.push({id, item, amount, category: selectedCat, ts, message: null});
+  itemInput.value = ''; amtInput.value = '';
+  renderFeed(); renderSummary(); saveEntries();
+  const msg = await generateMessage(item, amount, selectedCat, weekCount);
+  const idx = entries.findIndex(e=>e.id===id);
+  if(idx>-1){ entries[idx].message = msg; saveEntries(); }
+  renderFeed();
+  btn.disabled = false;
+}
+document.getElementById('submitBtn').addEventListener('click', addEntry);
+document.getElementById('amtInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addEntry(); });
+
+/* 固定支出 */
+function renderFixed(){
+  const total = fixedExpenses.reduce((s,f)=>s+f.amount,0);
+  document.getElementById('fixedTotal').textContent = '$' + total.toLocaleString();
+  const list = document.getElementById('fixedList');
+  const empty = document.getElementById('fixedEmpty');
+  list.innerHTML = '';
+  if(fixedExpenses.length===0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+  fixedExpenses.forEach(f=>{
+    const row = document.createElement('div');
+    row.className='fixed-row';
+    row.innerHTML = `<div><div class="name">${escapeHtml(f.name)}</div><div class="cat">${FIXED_CATEGORIES[f.category]||'📌 其他固定支出'}</div></div>
+      <div class="right"><div class="amt">$${f.amount.toLocaleString()}</div><button class="del" data-id="${f.id}">✕</button></div>`;
+    row.querySelector('.del').addEventListener('click', ()=>{
+      fixedExpenses = fixedExpenses.filter(x=>x.id!==f.id);
+      saveFixed(); renderFixed();
+    });
+    list.appendChild(row);
+  });
+}
+document.getElementById('fixedSubmitBtn').addEventListener('click', ()=>{
+  const nameInput = document.getElementById('fixedNameInput');
+  const amtInput = document.getElementById('fixedAmtInput');
+  const catSelect = document.getElementById('fixedCatSelect');
+  const name = nameInput.value.trim();
+  const amount = parseFloat(amtInput.value);
+  if(!name || !amount || amount<=0){ nameInput.focus(); return; }
+  fixedExpenses.push({id:'f'+Date.now(), name, amount, category: catSelect.value});
+  nameInput.value=''; amtInput.value='';
+  saveFixed(); renderFixed();
+});
+
+/* 月結算 */
+function renderMonthly(){
+  const now = new Date();
+  document.getElementById('monthLabel').textContent = `${now.getFullYear()}年${now.getMonth()+1}月`;
+  const fixedTotal = fixedExpenses.reduce((s,f)=>s+f.amount,0);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const flexTotal = entries.filter(e=>e.ts>=monthStart).reduce((s,e)=>s+e.amount,0);
+  const grand = fixedTotal + flexTotal;
+  document.getElementById('monthFixed').textContent = '$' + fixedTotal.toLocaleString();
+  document.getElementById('monthFlexible').textContent = '$' + flexTotal.toLocaleString();
+  document.getElementById('monthTotal').textContent = '$' + grand.toLocaleString();
+  let msg;
+  if(fixedTotal===0 && flexTotal===0){
+    msg = '這個月還沒有資料，去「固定支出」設定每月必要的支出，再回來記帳，暖暖就能幫你看見完整的一個月喔。';
+  } else if(fixedTotal===0){
+    msg = `目前記錄的日常花費是 $${flexTotal.toLocaleString()}。如果把保險、學費、卡費、房貸這些固定支出也設定進去，這個月的全貌會更清楚喔。`;
+  } else {
+    msg = `這個月固定支出 $${fixedTotal.toLocaleString()}，加上目前已經記錄的日常花費 $${flexTotal.toLocaleString()}，一共是 $${grand.toLocaleString()}。你把每個月的輪廓看得這麼清楚，是很棒的財務意識！`;
+  }
+  document.getElementById('monthMsg').textContent = msg;
+}
+
+/* 存錢目標 */
+function goalMoodMessage(pct){
+  if(pct>=100) return '目標達成了！暖暖要替你拍拍手，這份堅持很不容易 🎉';
+  if(pct>=75) return '已經很接近目標了，最後這一段，慢慢存也沒關係，暖暖陪你走完。';
+  if(pct>=50) return '存到一半以上囉，你已經比想像中更靠近這個目標了。';
+  if(pct>=25) return '開始累積了，每一筆存進來的錢，都是未來的自己會感謝現在的你。';
+  return '目標設定好了，不用著急，一點一點存，暖暖會陪你記錄每一步。';
+}
+function renderGoal(){
+  const setupCard = document.getElementById('goalSetupCard');
+  const activeCard = document.getElementById('goalActiveCard');
+  if(!goal){ setupCard.style.display='block'; activeCard.style.display='none'; return; }
+  setupCard.style.display='none'; activeCard.style.display='block';
+  const saved = deposits.reduce((s,d)=>s+d.amount,0);
+  const pct = goal.target>0 ? Math.min(100, Math.round(saved/goal.target*100)) : 0;
+  document.getElementById('goalName').textContent = goal.name;
+  document.getElementById('goalFill').style.width = pct + '%';
+  document.getElementById('goalSaved').textContent = '$' + saved.toLocaleString();
+  document.getElementById('goalTarget').textContent = '$' + goal.target.toLocaleString();
+  document.getElementById('goalPct').textContent = pct + '%';
+  document.getElementById('goalMsg').textContent = goalMoodMessage(pct);
+
+  const list = document.getElementById('depositList');
+  const empty = document.getElementById('depositEmpty');
+  list.innerHTML = '';
+  if(deposits.length===0){ empty.style.display='block'; }
+  else{
+    empty.style.display='none';
+    [...deposits].sort((a,b)=>b.ts-a.ts).forEach(d=>{
+      const date = new Date(d.ts);
+      const row = document.createElement('div');
+      row.className='deposit-row';
+      row.innerHTML = `<span>${date.getMonth()+1}/${date.getDate()} ${d.note?escapeHtml(d.note):''}</span><span class="note">+$${d.amount.toLocaleString()}</span>`;
+      list.appendChild(row);
+    });
+  }
+}
+document.getElementById('goalSubmitBtn').addEventListener('click', ()=>{
+  const nameInput = document.getElementById('goalNameInput');
+  const targetInput = document.getElementById('goalTargetInput');
+  const name = nameInput.value.trim();
+  const target = parseFloat(targetInput.value);
+  if(!name || !target || target<=0){ nameInput.focus(); return; }
+  goal = {name, target};
+  deposits = [];
+  saveGoal(); saveDeposits(); renderGoal();
+});
+document.getElementById('depositSubmitBtn').addEventListener('click', ()=>{
+  const amtInput = document.getElementById('depositAmtInput');
+  const noteInput = document.getElementById('depositNoteInput');
+  const amount = parseFloat(amtInput.value);
+  if(!amount || amount<=0){ amtInput.focus(); return; }
+  deposits.push({id:'d'+Date.now(), amount, note: noteInput.value.trim(), ts: Date.now()});
+  amtInput.value=''; noteInput.value='';
+  saveDeposits(); renderGoal();
+});
+document.getElementById('resetGoalBtn').addEventListener('click', ()=>{
+  goal = null; deposits = [];
+  saveGoal(); saveDeposits(); renderGoal();
+});
+
+loadAll();
+</script>
+</body>
+</html>
