@@ -110,6 +110,30 @@
   .receipt .amt{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:16px;color:var(--moss-deep);}
   .receipt .del{border:none;background:none;color:var(--ink-soft);font-size:16px;cursor:pointer;padding:2px 4px;}
 
+  .entry-actions{display:flex;gap:6px;margin:2px 0 8px 2px;}
+  .entry-actions button{
+    border:none;background:none;color:var(--ink-soft);font-size:12px;
+    cursor:pointer;padding:2px 6px;font-family:'Noto Sans TC',sans-serif;
+  }
+  .entry-actions button:hover{color:var(--persimmon);}
+
+  .edit-form{
+    background:var(--card);border:1px solid var(--apricot-deep);border-radius:14px;
+    padding:12px 14px;margin-bottom:6px;
+  }
+  .edit-form .form-row{margin-bottom:8px;}
+  .edit-form select{
+    width:100%;border:1.5px solid var(--card-edge);border-radius:12px;
+    padding:9px 11px;font-size:14px;font-family:'Noto Sans TC',sans-serif;background:#FFFDF8;color:var(--ink);
+  }
+  .edit-form .edit-btns{display:flex;gap:8px;}
+  .edit-form .edit-btns button{
+    flex:1;border:none;border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;
+    font-family:'Noto Sans TC',sans-serif;
+  }
+  .edit-save{background:var(--persimmon);color:#fff;}
+  .edit-cancel{background:var(--bg);color:var(--ink-soft);}
+
   .reply{
     background:var(--tape);border-radius:4px 14px 14px 14px;padding:11px 14px;
     font-size:13.5px;line-height:1.7;color:var(--ink);
@@ -354,6 +378,7 @@ let fixedExpenses = [];
 let goal = null;
 let deposits = [];
 let lastOpenerIdx = -1;
+let editingId = null;
 
 function catLabel(key){ const c = CATEGORIES.find(c=>c.key===key); return c ? c.label : '✨ 其他'; }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -485,6 +510,28 @@ function renderFeed(){
     row.className = 'entry';
     const date = new Date(e.ts);
     const dateStr = `${date.getMonth()+1}/${date.getDate()} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+
+    if(editingId === e.id){
+      const options = CATEGORIES.map(c=>`<option value="${c.key}" ${c.key===e.category?'selected':''}>${c.label}</option>`).join('');
+      row.innerHTML = `
+        <div class="avatar">${avatarSVG()}</div>
+        <div class="bubble-col">
+          <div class="edit-form">
+            <div class="form-row"><input type="text" id="edit-item-${e.id}" value="${escapeHtml(e.item)}" maxlength="30"></div>
+            <div class="form-row"><input type="number" id="edit-amt-${e.id}" value="${e.amount}" min="0" step="1"></div>
+            <div class="form-row"><select id="edit-cat-${e.id}">${options}</select></div>
+            <div class="edit-btns">
+              <button class="edit-cancel" id="edit-cancel-${e.id}">取消</button>
+              <button class="edit-save" id="edit-save-${e.id}">儲存</button>
+            </div>
+          </div>
+        </div>`;
+      feed.appendChild(row);
+      document.getElementById('edit-cancel-'+e.id).addEventListener('click', ()=>{ editingId = null; renderFeed(); });
+      document.getElementById('edit-save-'+e.id).addEventListener('click', ()=>saveEdit(e.id));
+      return;
+    }
+
     row.innerHTML = `
       <div class="avatar">${avatarSVG()}</div>
       <div class="bubble-col">
@@ -492,10 +539,49 @@ function renderFeed(){
           <div><div class="item">${escapeHtml(e.item)}</div><div class="meta">${catLabel(e.category)} · ${dateStr}</div></div>
           <div class="amt">$${e.amount.toLocaleString()}</div>
         </div>
+        <div class="entry-actions">
+          <button class="edit-trigger" data-id="${e.id}">✎ 修改</button>
+          <button class="del-trigger" data-id="${e.id}">✕ 刪除</button>
+        </div>
         <div class="reply" id="reply-${e.id}">${e.message ? e.message : '<span class="dots"><span>●</span><span>●</span><span>●</span></span>'}</div>
       </div>`;
     feed.appendChild(row);
+    row.querySelector('.edit-trigger').addEventListener('click', ()=>{ editingId = e.id; renderFeed(); });
+    row.querySelector('.del-trigger').addEventListener('click', ()=>{ deleteEntry(e.id); });
   });
+}
+
+function deleteEntry(id){
+  entries = entries.filter(e=>e.id!==id);
+  if(editingId===id) editingId = null;
+  saveEntries(); renderFeed(); renderSummary();
+}
+
+async function saveEdit(id){
+  const itemInput = document.getElementById('edit-item-'+id);
+  const amtInput = document.getElementById('edit-amt-'+id);
+  const catSelect = document.getElementById('edit-cat-'+id);
+  const item = itemInput.value.trim();
+  const amount = parseFloat(amtInput.value);
+  const category = catSelect.value;
+  if(!item || !amount || amount<=0){ itemInput.focus(); return; }
+
+  const idx = entries.findIndex(e=>e.id===id);
+  if(idx===-1) return;
+  const ts = entries[idx].ts;
+  const weekCount = entries.filter(e => e.id!==id && e.category===category && e.ts > ts-7*24*60*60*1000 && e.ts<=ts).length + 1;
+
+  entries[idx].item = item;
+  entries[idx].amount = amount;
+  entries[idx].category = category;
+  entries[idx].message = null;
+  editingId = null;
+  renderFeed(); renderSummary(); saveEntries();
+
+  const msg = await generateMessage(item, amount, category, weekCount);
+  const idx2 = entries.findIndex(e=>e.id===id);
+  if(idx2>-1){ entries[idx2].message = msg; saveEntries(); }
+  renderFeed();
 }
 
 async function addEntry(){
