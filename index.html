@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>暖記帳 — 你的記帳好朋友</title>
+<title>豆記帳 — 你的記帳好朋友</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%95%3C/text%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
@@ -181,6 +181,13 @@
   .deposit-row .note{color:var(--ink-soft);}
 
   .footnote{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:20px;}
+
+  .garden-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .flower-card{background:var(--card);border:1px solid var(--card-edge);border-radius:18px;padding:12px;text-align:center;}
+  .flower-card svg{width:100%;height:auto;max-width:120px;}
+  .flower-card .f-month{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:13px;margin:4px 0 2px;}
+  .flower-card .f-count{font-size:11px;color:var(--ink-soft);margin:0 0 6px;}
+  .flower-card .f-desc{font-size:11.5px;line-height:1.6;color:var(--ink);background:var(--tape);border-radius:10px;padding:8px 9px;text-align:left;}
 </style>
 </head>
 <body>
@@ -189,19 +196,20 @@
   <div class="brand">
     <div class="mascot-wrap">
       <svg class="mascot" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="50" cy="56" rx="38" ry="34" fill="#FFC79A"/>
-        <circle cx="36" cy="52" r="4.2" fill="#3D3423"/>
-        <circle cx="64" cy="52" r="4.2" fill="#3D3423"/>
-        <ellipse cx="30" cy="62" rx="6" ry="4" fill="#F0985A" opacity=".55"/>
-        <ellipse cx="70" cy="62" rx="6" ry="4" fill="#F0985A" opacity=".55"/>
-        <path d="M40 66 Q50 74 60 66" stroke="#3D3423" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M50 22 Q46 10 38 12" stroke="#E2703A" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M50 22 Q54 10 62 12" stroke="#E2703A" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="50" cy="60" rx="28" ry="34" fill="#C89666"/>
+        <line x1="50" y1="26" x2="50" y2="14" stroke="#7C9473" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="42" cy="12" rx="10" ry="6" fill="#7C9473" transform="rotate(-25 42 12)"/>
+        <ellipse cx="58" cy="12" rx="10" ry="6" fill="#8FA682" transform="rotate(25 58 12)"/>
+        <circle cx="40" cy="58" r="4" fill="#3D3423"/>
+        <circle cx="60" cy="58" r="4" fill="#3D3423"/>
+        <ellipse cx="34" cy="68" rx="5" ry="3.5" fill="#A9744F" opacity=".5"/>
+        <ellipse cx="66" cy="68" rx="5" ry="3.5" fill="#A9744F" opacity=".5"/>
+        <path d="M42 72 Q50 78 58 72" stroke="#3D3423" stroke-width="3" fill="none" stroke-linecap="round"/>
       </svg>
     </div>
     <div>
-      <h1>暖記帳</h1>
-      <p>嗨，我是暖暖，記帳的時候我都在你身邊</p>
+      <h1>豆記帳</h1>
+      <p>嗨，我是豆豆，記帳的時候我都在你身邊</p>
     </div>
   </div>
 
@@ -210,6 +218,7 @@
     <div class="tab-btn" data-tab="fixed">固定支出</div>
     <div class="tab-btn" data-tab="monthly">月結算</div>
     <div class="tab-btn" data-tab="goal">存錢目標</div>
+    <div class="tab-btn" data-tab="garden">花園</div>
   </div>
 
   <!-- 記帳 -->
@@ -217,7 +226,7 @@
     <div class="hero">
       <p class="hero-label">本週一起花掉的</p>
       <p class="hero-num" id="weekTotal">$0</p>
-      <div class="hero-msg" id="heroMsg">還沒有紀錄喔，記第一筆讓暖暖看看吧！</div>
+      <div class="hero-msg" id="heroMsg">還沒有紀錄喔，記第一筆讓豆豆看看吧！</div>
     </div>
 
     <div class="form-card">
@@ -228,7 +237,7 @@
     </div>
 
     <div class="feed" id="feed"></div>
-    <div class="empty" id="emptyState">暖暖還在等你的第一筆消費紀錄 🍡</div>
+    <div class="empty" id="emptyState">豆豆還在等你的第一筆消費紀錄 🍡</div>
 
     <div class="summary">
       <h3>本週小小分析</h3>
@@ -241,7 +250,7 @@
     <div class="hero">
       <p class="hero-label">每月固定要準備的</p>
       <p class="hero-num" id="fixedTotal">$0</p>
-      <div class="hero-msg">保險、學費、卡費、房貸這些，先設定好，暖暖就能幫你把每個月的全貌看得更清楚。</div>
+      <div class="hero-msg">保險、學費、卡費、房貸這些，先設定好，豆豆就能幫你把每個月的全貌看得更清楚。</div>
     </div>
     <div class="form-card">
       <div class="form-row"><input type="text" id="fixedNameInput" placeholder="項目名稱，例如：房貸" maxlength="20"></div>
@@ -312,6 +321,12 @@
     </div>
   </div>
 
+  <!-- 花園 -->
+  <div class="panel" id="panel-garden">
+    <div class="hero-msg" style="margin-bottom:16px;">每次記帳，就是幫這個月的種子澆一次水。記得越勤快，它長得越茂盛，每個月都會留下屬於那個月的一株植物。</div>
+    <div class="garden-grid" id="gardenGrid"></div>
+  </div>
+
   <p class="footnote" id="storageNote"></p>
 </div>
 
@@ -334,7 +349,7 @@ async function storageSet(key, value){
 
 document.getElementById('storageNote').textContent = HAS_CLOUD_STORAGE
   ? '資料存在你的 Claude 帳號裡。'
-  : '資料只存在你自己這台裝置的瀏覽器裡，暖暖不會把它傳到任何地方。';
+  : '資料只存在你自己這台裝置的瀏覽器裡，豆豆不會把它傳到任何地方。';
 
 const CATEGORIES = [
   {key:'coffee', label:'☕ 咖啡飲料'},
@@ -357,10 +372,10 @@ const OPENERS = [
   (item,amt)=>`${item}入手啦！$${amt}花得很值得，喜歡的東西就該擁有。`,
   (item,amt)=>`哇，$${amt}的${item}，光用想的就覺得心情變好了呢。`,
   (item,amt)=>`這筆 $${amt} 花在${item}上，是你今天送給自己的禮物。`,
-  (item,amt)=>`${item}到手！暖暖也替你開心，$${amt}花得很有意義。`,
+  (item,amt)=>`${item}到手！豆豆也替你開心，$${amt}花得很有意義。`,
   (item,amt)=>`很棒的選擇，${item}花了 $${amt}，你值得這份小小的滿足。`,
   (item,amt)=>`$${amt}換來${item}，感覺今天的自己被好好照顧了。`,
-  (item,amt)=>`記錄完成！${item} $${amt}，每一筆消費都是你在生活裡做的小決定，暖暖都支持你。`
+  (item,amt)=>`記錄完成！${item} $${amt}，每一筆消費都是你在生活裡做的小決定，豆豆都支持你。`
 ];
 const NUDGES = {
   coffee: ['如果咖啡因有點多，一週抓3-4杯左右身體會更舒服一點，不用戒掉，喝得開心最重要。','咖啡因帶來的精神很棒，不妨偶爾留意一下攝取量，讓身體跟心情一樣輕盈。'],
@@ -379,6 +394,7 @@ let goal = null;
 let deposits = [];
 let lastOpenerIdx = -1;
 let editingId = null;
+let gardenRecords = {};
 
 function catLabel(key){ const c = CATEGORIES.find(c=>c.key===key); return c ? c.label : '✨ 其他'; }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -387,6 +403,7 @@ function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+tab));
   if(tab==='monthly') renderMonthly();
+  if(tab==='garden') renderGarden();
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click', ()=>switchTab(b.dataset.tab)));
 
@@ -404,22 +421,25 @@ function renderChips(){
 renderChips();
 
 async function loadAll(){
-  const [e, f, g, d] = await Promise.all([
+  const [e, f, g, d, gd] = await Promise.all([
     storageGet('warm-ledger-entries'),
     storageGet('warm-ledger-fixed'),
     storageGet('warm-ledger-goal'),
-    storageGet('warm-ledger-deposits')
+    storageGet('warm-ledger-deposits'),
+    storageGet('warm-ledger-garden')
   ]);
   try{ entries = e ? JSON.parse(e) : []; }catch(err){ entries = []; }
   try{ fixedExpenses = f ? JSON.parse(f) : []; }catch(err){ fixedExpenses = []; }
   try{ goal = g ? JSON.parse(g) : null; }catch(err){ goal = null; }
   try{ deposits = d ? JSON.parse(d) : []; }catch(err){ deposits = []; }
+  try{ gardenRecords = gd ? JSON.parse(gd) : {}; }catch(err){ gardenRecords = {}; }
   renderFeed(); renderSummary(); renderFixed(); renderGoal();
 }
 function saveEntries(){ storageSet('warm-ledger-entries', JSON.stringify(entries)); }
 function saveFixed(){ storageSet('warm-ledger-fixed', JSON.stringify(fixedExpenses)); }
 function saveGoal(){ storageSet('warm-ledger-goal', JSON.stringify(goal)); }
 function saveDeposits(){ storageSet('warm-ledger-deposits', JSON.stringify(deposits)); }
+function saveGarden(){ storageSet('warm-ledger-garden', JSON.stringify(gardenRecords)); }
 
 function weeklyCountFor(catKey, beforeTs){
   const weekAgo = beforeTs - 7*24*60*60*1000;
@@ -441,7 +461,7 @@ function fallbackMessage(item, amount, catKey, weekCount){
 async function generateMessage(item, amount, catKey, weekCount){
   if(!HAS_CLOUD_STORAGE) return fallbackMessage(item, amount, catKey, weekCount);
   const catName = catLabel(catKey).replace(/^\S+\s/, '');
-  const system = `你是「暖暖」，一個溫暖、正向、絕不說教的記帳好朋友吉祥物。使用者反其道而行，不想要碎碎念記帳，只想要被鼓勵和肯定。
+  const system = `你是「豆豆」，一個溫暖、正向、絕不說教的記帳好朋友吉祥物。使用者反其道而行，不想要碎碎念記帳，只想要被鼓勵和肯定。
 規則：
 1. 用繁體中文回覆，語氣像貼心朋友，親切自然，可以用最多1-2個表情符號。
 2. 一定要先真心肯定/慶祝這筆消費，讓使用者覺得花這筆錢是值得的、開心的。
@@ -465,8 +485,8 @@ async function generateMessage(item, amount, catKey, weekCount){
 }
 
 function moodMessage(total, count){
-  if(count===0) return '還沒有紀錄喔，記第一筆讓暖暖看看吧！';
-  if(total < 300) return `這週目前花了 $${total}，步調很輕鬆，暖暖陪你慢慢記～`;
+  if(count===0) return '還沒有紀錄喔，記第一筆讓豆豆看看吧！';
+  if(total < 300) return `這週目前花了 $${total}，步調很輕鬆，豆豆陪你慢慢記～`;
   if(total < 1000) return `這週累積 $${total} 囉，每一筆都是你為自己做的小小決定，很棒！`;
   return `這週已經 $${total} 了，看起來這是豐盛的一週，記得每一筆都有帶給你開心或方便喔！`;
 }
@@ -495,7 +515,7 @@ function renderSummary(){
 }
 
 function avatarSVG(){
-  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="56" rx="38" ry="34" fill="#FFC79A"/><circle cx="36" cy="52" r="4.2" fill="#3D3423"/><circle cx="64" cy="52" r="4.2" fill="#3D3423"/><path d="M40 66 Q50 74 60 66" stroke="#3D3423" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="60" rx="28" ry="34" fill="#C89666"/><ellipse cx="42" cy="12" rx="10" ry="6" fill="#7C9473" transform="rotate(-25 42 12)"/><ellipse cx="58" cy="12" rx="10" ry="6" fill="#8FA682" transform="rotate(25 58 12)"/><line x1="50" y1="26" x2="50" y2="14" stroke="#7C9473" stroke-width="4" stroke-linecap="round"/><circle cx="40" cy="58" r="4" fill="#3D3423"/><circle cx="60" cy="58" r="4" fill="#3D3423"/><path d="M42 72 Q50 78 58 72" stroke="#3D3423" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
 }
 
 function renderFeed(){
@@ -653,7 +673,7 @@ function renderMonthly(){
   document.getElementById('monthTotal').textContent = '$' + grand.toLocaleString();
   let msg;
   if(fixedTotal===0 && flexTotal===0){
-    msg = '這個月還沒有資料，去「固定支出」設定每月必要的支出，再回來記帳，暖暖就能幫你看見完整的一個月喔。';
+    msg = '這個月還沒有資料，去「固定支出」設定每月必要的支出，再回來記帳，豆豆就能幫你看見完整的一個月喔。';
   } else if(fixedTotal===0){
     msg = `目前記錄的日常花費是 $${flexTotal.toLocaleString()}。如果把保險、學費、卡費、房貸這些固定支出也設定進去，這個月的全貌會更清楚喔。`;
   } else {
@@ -664,11 +684,11 @@ function renderMonthly(){
 
 /* 存錢目標 */
 function goalMoodMessage(pct){
-  if(pct>=100) return '目標達成了！暖暖要替你拍拍手，這份堅持很不容易 🎉';
-  if(pct>=75) return '已經很接近目標了，最後這一段，慢慢存也沒關係，暖暖陪你走完。';
+  if(pct>=100) return '目標達成了！豆豆要替你拍拍手，這份堅持很不容易 🎉';
+  if(pct>=75) return '已經很接近目標了，最後這一段，慢慢存也沒關係，豆豆陪你走完。';
   if(pct>=50) return '存到一半以上囉，你已經比想像中更靠近這個目標了。';
   if(pct>=25) return '開始累積了，每一筆存進來的錢，都是未來的自己會感謝現在的你。';
-  return '目標設定好了，不用著急，一點一點存，暖暖會陪你記錄每一步。';
+  return '目標設定好了，不用著急，一點一點存，豆豆會陪你記錄每一步。';
 }
 function renderGoal(){
   const setupCard = document.getElementById('goalSetupCard');
@@ -722,6 +742,133 @@ document.getElementById('resetGoalBtn').addEventListener('click', ()=>{
   goal = null; deposits = [];
   saveGoal(); saveDeposits(); renderGoal();
 });
+
+/* 花園 */
+const FLOWER_PALETTE = ['#E2703A','#E8B84B','#7C9473','#D98C9A','#B39DDB','#5B8FA8'];
+
+function hashStr(s){
+  let h = 0;
+  for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) >>> 0; }
+  return h;
+}
+function monthKeyOf(ts){
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function monthLabelOf(key){
+  const [y,m] = key.split('-');
+  return `${y}年${parseInt(m,10)}月`;
+}
+function stageOf(count){
+  if(count<=0) return 'seed';
+  if(count<3) return 'sprout';
+  if(count<6) return 'bud';
+  return 'bloom';
+}
+function monthStats(key){
+  const monthEntries = entries.filter(e=>monthKeyOf(e.ts)===key);
+  const count = monthEntries.length;
+  const total = monthEntries.reduce((s,e)=>s+e.amount,0);
+  const byCat = {};
+  monthEntries.forEach(e=>{ byCat[e.category] = (byCat[e.category]||0)+1; });
+  let topCategory = null, topN = 0;
+  Object.entries(byCat).forEach(([k,v])=>{ if(v>topN){ topN=v; topCategory=k; } });
+  return { count, total, topCategory };
+}
+
+function generateFlowerSVG(seedStr, stage, count){
+  const hash = hashStr(seedStr);
+  const petalColor = FLOWER_PALETTE[hash % FLOWER_PALETTE.length];
+  const petalCount = 5 + (hash % 4);
+  const soilY = 125;
+  const stemH = stage==='seed' ? 0 : stage==='sprout' ? 16 : stage==='bud' ? 34 : 52;
+  let svg = `<svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<ellipse cx="60" cy="${soilY+8}" rx="42" ry="10" fill="#EFE2CB"/>`;
+  if(stage==='seed'){
+    svg += `<ellipse cx="60" cy="${soilY}" rx="8" ry="10" fill="#A9744F"/>`;
+  } else {
+    const topY = soilY - stemH;
+    svg += `<line x1="60" y1="${soilY}" x2="60" y2="${topY}" stroke="#7C9473" stroke-width="5" stroke-linecap="round"/>`;
+    svg += `<ellipse cx="46" cy="${soilY-stemH*0.45}" rx="12" ry="6" fill="#8FA682" transform="rotate(-30 46 ${soilY-stemH*0.45})"/>`;
+    svg += `<ellipse cx="74" cy="${soilY-stemH*0.6}" rx="12" ry="6" fill="#7C9473" transform="rotate(30 74 ${soilY-stemH*0.6})"/>`;
+    if(stage==='bud'){
+      svg += `<circle cx="60" cy="${topY}" r="11" fill="${petalColor}"/>`;
+    } else if(stage==='bloom'){
+      for(let i=0;i<petalCount;i++){
+        const deg = i*(360/petalCount);
+        svg += `<ellipse cx="60" cy="${topY-14}" rx="9" ry="15" fill="${petalColor}" transform="rotate(${deg} 60 ${topY})"/>`;
+      }
+      svg += `<circle cx="60" cy="${topY}" r="9" fill="#E8B84B"/>`;
+    }
+  }
+  svg += `</svg>`;
+  return svg;
+}
+
+function fallbackFlowerDesc(monthLabel, stage, count){
+  const pool = {
+    seed: [`${monthLabel}的種子還靜靜躺在土裡，等你第一筆記帳幫它澆水。`,'種子已經準備好了，只差你來的第一筆消費紀錄。'],
+    sprout: [`${monthLabel}的新芽剛冒出頭，已經感覺到你${count}次溫柔的澆灌。`,`小小的芽尖探出土壤，這是${monthLabel}屬於你的成長開始。`],
+    bud: [`${monthLabel}的花苞正在醞釀，${count}筆紀錄讓它一天比一天飽滿。`,'含苞待放的它，正因為你穩定的記帳而慢慢積蓄能量。'],
+    bloom: [`恭喜！${monthLabel}開出了一朵完整的花，這是你這個月${count}次用心記帳換來的成果。`,`這朵盛開的花，是${monthLabel}屬於你的紀錄勳章，豆豆也替你開心！`]
+  };
+  const arr = pool[stage] || pool.seed;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+async function generateFlowerDescription(monthLabel, stage, count, topCategory){
+  if(!HAS_CLOUD_STORAGE) return fallbackFlowerDesc(monthLabel, stage, count);
+  const system = `你是植物圖鑑的作者，用溫暖、想像力豐富、正向的語氣，幫一株「因為使用者記帳而長出來的虛構植物」寫一段簡短介紹。
+規則：
+1. 用繁體中文，2到3句話，像植物圖鑑口吻，帶點童趣溫暖，不要說教。
+2. 一定要正向看待這個月的記帳次數，就算次數很少也要正向形容（例如「安靜生長」），不要出現「太少」「不夠」等負面字眼。
+3. 純文字，不要用markdown。`;
+  const stageDesc = {seed:'還是種子，尚未發芽',sprout:'剛冒出新芽',bud:'長出了花苞，即將綻放',bloom:'已經完整綻放'}[stage];
+  const userMsg = `這株植物代表使用者在${monthLabel}的記帳表現：目前狀態是「${stageDesc}」，這個月總共記錄了${count}筆消費，最常出現的類別是「${topCategory?catLabel(topCategory).replace(/^\S+\s/,''):'尚無資料'}」。請幫這株虛構的植物寫一段可愛的介紹。`;
+  try{
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:250, system:system, messages:[{role:'user', content:userMsg}] })
+    });
+    const data = await response.json();
+    const textBlock = (data.content || []).find(b=>b.type==='text');
+    if(textBlock && textBlock.text) return textBlock.text.trim();
+    throw new Error('no text');
+  }catch(e){ return fallbackFlowerDesc(monthLabel, stage, count); }
+}
+
+function renderGarden(){
+  const keys = new Set(entries.map(e=>monthKeyOf(e.ts)));
+  keys.add(monthKeyOf(Date.now()));
+  const sortedKeys = [...keys].sort().reverse();
+  const wrap = document.getElementById('gardenGrid');
+  wrap.innerHTML = sortedKeys.map(key=>{
+    const stats = monthStats(key);
+    const stage = stageOf(stats.count);
+    const svg = generateFlowerSVG(key+(stats.topCategory||''), stage, stats.count);
+    const cached = gardenRecords[key];
+    const desc = (cached && cached.stage===stage) ? cached.description : null;
+    return `<div class="flower-card">
+      ${svg}
+      <div class="f-month">${monthLabelOf(key)}</div>
+      <div class="f-count">澆水 ${stats.count} 次</div>
+      <div class="f-desc" id="fdesc-${key}">${desc ? escapeHtml(desc) : '<span class="dots"><span>●</span><span>●</span><span>●</span></span>'}</div>
+    </div>`;
+  }).join('');
+
+  sortedKeys.forEach(key=>{
+    const stats = monthStats(key);
+    const stage = stageOf(stats.count);
+    const cached = gardenRecords[key];
+    if(cached && cached.stage===stage) return;
+    generateFlowerDescription(monthLabelOf(key), stage, stats.count, stats.topCategory).then(desc=>{
+      gardenRecords[key] = { stage, description: desc };
+      saveGarden();
+      const el = document.getElementById('fdesc-'+key);
+      if(el) el.textContent = desc;
+    });
+  });
+}
 
 loadAll();
 </script>
